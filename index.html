@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel Vision Systems — Computational Superiority</title>
+<link rel="stylesheet" href="styles/main.css">
+<script src="scripts/main.js" defer></script>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<!-- ════════════════════ TOPBAR ════════════════════ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark"></div>
+    <span>Sentinel Vision</span>
+  </div>
+  <nav class="topbar-nav">
+    <a href="#capabilities">Capabilities</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#specs">Specifications</a>
+  </nav>
+  <div class="topbar-right"><span class="rec-dot"></span>EO/IR Suite v4.2.1</div>
+</div>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow">Algorithmic Target Acquisition</div>
+  <h1 class="hero-title">See what the<br><em>human eye cannot.</em></h1>
+  <p class="hero-sub">Sub-pixel detection across full-spectrum EO/IR sensor arrays. Real-time classification at ranges beyond human visual acuity.</p>
+  <div class="hero-line"></div>
+</section>
+
+<!-- ════════════════════ SENSOR PANELS ════════════════════ -->
+<section class="section-pad">
+  <div class="panel-grid">
+    <div class="panel">
+      <div class="panel-image-wrap">
+        <canvas id="canvas1" width="512" height="512"></canvas>
+        <div class="brackets"><div class="bracket-bl"></div><div class="bracket-br"></div></div>
+        <div class="hud-overlay">
+          <div class="hud-text hud-tl">EO — WFOV</div>
+          <div class="hud-text hud-tr">GAIN 4.2x</div>
+          <div class="hud-text hud-bl">AZ 247.3° EL 12.1°</div>
+        </div>
+      </div>
+      <div class="panel-text">
+        <div class="panel-label">Detect objects at 2×2 pixels.</div>
+        <div class="panel-meta">Sub-pixel classification · Deep noise floor penetration</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-image-wrap">
+        <canvas id="canvas2" width="512" height="512"></canvas>
+        <div class="brackets"><div class="bracket-bl"></div><div class="bracket-br"></div></div>
+        <div class="hud-overlay">
+          <div class="hud-text hud-tl">MWIR — QUAD</div>
+          <div class="hud-text hud-tr">TRK 04</div>
+          <div class="hud-text hud-bl">RNG 3.2km</div>
+        </div>
+      </div>
+      <div class="panel-text">
+        <div class="panel-label">Enable early, long-range detections with EO/IR cameras already in place.</div>
+        <div class="panel-meta">Multi-sensor fusion · Legacy hardware integration</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-image-wrap">
+        <canvas id="canvas3" width="512" height="512"></canvas>
+        <div class="brackets"><div class="bracket-bl"></div><div class="bracket-br"></div></div>
+        <div class="hud-overlay">
+          <div class="hud-text hud-tl">LWIR — NFOV</div>
+          <div class="hud-text hud-tr">FLIR 8–14μm</div>
+          <div class="hud-text hud-bl">POLARITY WHT</div>
+        </div>
+      </div>
+      <div class="panel-text">
+        <div class="panel-label">Spot dark targets partially obscured by landscape and terrain.</div>
+        <div class="panel-meta">Through-foliage detection · Thermal signature isolation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ STAT BAR ════════════════════ -->
+<section class="stat-bar reveal">
+  <div class="stat">
+    <div class="stat-value">2×2<span class="unit"> px</span></div>
+    <div class="stat-label">Minimum Detection</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">14<span class="unit"> ms</span></div>
+    <div class="stat-label">Inference Latency</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">99.7<span class="unit"> %</span></div>
+    <div class="stat-label">Classification Accuracy</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">24/7</div>
+    <div class="stat-label">Persistent Surveillance</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ LIVE DETECTION ════════════════════ -->
+<section class="live-section">
+  <div class="live-canvas-wrap">
+    <canvas id="liveCanvas" width="1400" height="500"></canvas>
+    <div class="live-corner tl"></div>
+    <div class="live-corner tr"></div>
+    <div class="live-corner bl"></div>
+    <div class="live-corner br"></div>
+    <div class="live-border-top"></div>
+    <div class="live-border-bottom"></div>
+    <div class="live-telemetry">
+      <div>FEED 001 — PERSISTENT STARE</div>
+      <div>LAT 34.0522° N</div>
+      <div>LON 118.2437° W</div>
+      <div>ALT 8,200 FT AGL</div>
+    </div>
+    <div class="live-telemetry-right">
+      <div><span class="rec-dot"></span>RECORDING</div>
+      <div id="liveTime">00:14:32:07</div>
+      <div id="liveFps">60 FPS</div>
+      <div id="liveDetections">DETECTIONS: 0</div>
+    </div>
+    <div class="live-hud">
+      <div class="live-hud-inner">
+        <div class="live-hud-label">Active Detections</div>
+        <div class="live-hud-count" id="liveCount">0</div>
+        <div class="live-hud-sub">Real-time autonomous classification</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ PIPELINE ════════════════════ -->
+<section class="section-pad reveal" id="pipeline">
+  <div class="section-eyebrow">Processing Pipeline</div>
+  <div class="section-title">From <em>photons to decisions</em><br>in under 14 milliseconds.</div>
+  <div class="section-desc">Every frame passes through a five-stage pipeline optimized for edge deployment. No cloud dependency. No latency penalty.</div>
+
+  <div class="pipeline-grid">
+    <div class="pipeline-step">
+      <div class="pipeline-num">01</div>
+      <div class="pipeline-name">Ingest</div>
+      <div class="pipeline-desc">Raw sensor stream acquisition across EO, MWIR, LWIR, and SWIR bands. Hardware-synchronized frame capture.</div>
+      <div class="pipeline-arrow"></div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-num">02</div>
+      <div class="pipeline-name">Preprocess</div>
+      <div class="pipeline-desc">Non-uniformity correction, dead pixel interpolation, digital image stabilization, and adaptive histogram equalization.</div>
+      <div class="pipeline-arrow"></div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-num">03</div>
+      <div class="pipeline-name">Detect</div>
+      <div class="pipeline-desc">Multi-scale sliding window with attention-gated feature pyramids. Sub-pixel anomaly detection at 2×2 resolution floor.</div>
+      <div class="pipeline-arrow"></div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-num">04</div>
+      <div class="pipeline-name">Classify</div>
+      <div class="pipeline-desc">Deep ensemble classification across 200+ target taxonomies. Confidence-calibrated probability distributions per track.</div>
+      <div class="pipeline-arrow"></div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-num">05</div>
+      <div class="pipeline-name">Track</div>
+      <div class="pipeline-desc">Multi-hypothesis tracking with IMM filter bank. Persistent identity maintenance through occlusion, maneuver, and re-acquisition.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ CAPABILITIES ════════════════════ -->
+<section class="section-pad reveal" id="capabilities">
+  <div class="section-eyebrow">Core Capabilities</div>
+  <div class="section-title">Engineered for the <em>hardest targets</em><br>in the most degraded conditions.</div>
+
+  <div class="cap-grid">
+    <div class="cap-card">
+      <svg class="cap-icon" viewBox="0 0 36 36"><rect x="4" y="4" width="12" height="12" rx="1" fill="none" stroke="var(--gray-400)" stroke-width="1"/><rect x="20" y="4" width="12" height="12" rx="1" fill="none" stroke="var(--gray-400)" stroke-width="1"/><rect x="4" y="20" width="12" height="12" rx="1" fill="none" stroke="var(--gray-400)" stroke-width="1"/><rect x="20" y="20" width="12" height="12" rx="1" fill="none" stroke="var(--red)" stroke-width="1.5"/><circle cx="26" cy="26" r="2" fill="var(--red)"/></svg>
+      <div class="cap-title">Sub-Pixel Detection</div>
+      <div class="cap-desc">Identify and classify targets occupying as few as four pixels in the sensor frame. Proprietary noise-floor penetration algorithms extract signal from thermal clutter.</div>
+      <div class="cap-metric">
+        <div class="cap-metric-value">2×2</div>
+        <div class="cap-metric-unit">pixel floor</div>
+      </div>
+    </div>
+    <div class="cap-card">
+      <svg class="cap-icon" viewBox="0 0 36 36"><circle cx="18" cy="18" r="12" fill="none" stroke="var(--gray-400)" stroke-width="1"/><line x1="18" y1="2" x2="18" y2="10" stroke="var(--gray-400)" stroke-width="1"/><line x1="18" y1="26" x2="18" y2="34" stroke="var(--gray-400)" stroke-width="1"/><line x1="2" y1="18" x2="10" y2="18" stroke="var(--gray-400)" stroke-width="1"/><line x1="26" y1="18" x2="34" y2="18" stroke="var(--gray-400)" stroke-width="1"/><circle cx="18" cy="18" r="3" fill="var(--red)"/></svg>
+      <div class="cap-title">Multi-Sensor Fusion</div>
+      <div class="cap-desc">Correlate detections across EO daylight, MWIR, LWIR thermal, SWIR, and night-vision intensified bands. Single fused track per physical entity.</div>
+      <div class="cap-metric">
+        <div class="cap-metric-value">5</div>
+        <div class="cap-metric-unit">spectral bands</div>
+      </div>
+    </div>
+    <div class="cap-card">
+      <svg class="cap-icon" viewBox="0 0 36 36"><path d="M6 30 Q8 14 14 18 Q20 22 22 8 Q24 2 30 6" fill="none" stroke="var(--gray-400)" stroke-width="1"/><circle cx="14" cy="18" r="2" fill="var(--gray-400)"/><circle cx="22" cy="8" r="2" fill="var(--red)"/></svg>
+      <div class="cap-title">Predictive Tracking</div>
+      <div class="cap-desc">IMM-filtered multi-hypothesis tracking maintains persistent identity through occlusion events, sharp maneuvers, and extended signal dropout.</div>
+      <div class="cap-metric">
+        <div class="cap-metric-value">180</div>
+        <div class="cap-metric-unit">sec reacquisition</div>
+      </div>
+    </div>
+    <div class="cap-card">
+      <svg class="cap-icon" viewBox="0 0 36 36"><rect x="3" y="8" width="30" height="20" rx="2" fill="none" stroke="var(--gray-400)" stroke-width="1"/><line x1="18" y1="8" x2="18" y2="28" stroke="var(--gray-400)" stroke-width="0.5"/><line x1="3" y1="18" x2="33" y2="18" stroke="var(--gray-400)" stroke-width="0.5"/><rect x="21" y="20" width="8" height="5" rx="1" fill="none" stroke="var(--red)" stroke-width="1.2"/></svg>
+      <div class="cap-title">Legacy Integration</div>
+      <div class="cap-desc">Deploy on cameras already in theater. No new hardware. Sentinel Vision ingests MPEG-TS, H.264/H.265, RTSP, and analog composite feeds.</div>
+      <div class="cap-metric">
+        <div class="cap-metric-value">0</div>
+        <div class="cap-metric-unit">new sensors required</div>
+      </div>
+    </div>
+    <div class="cap-card">
+      <svg class="cap-icon" viewBox="0 0 36 36"><path d="M8 28 L14 12 L20 20 L26 6 L32 14" fill="none" stroke="var(--gray-400)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/><line x1="4" y1="30" x2="34" y2="30" stroke="var(--gray-400)" stroke-width="0.5"/><circle cx="26" cy="6" r="2.5" fill="var(--red)"/></svg>
+      <div class="cap-title">Edge Deployment</div>
+      <div class="cap-desc">Full pipeline runs on NVIDIA Jetson Orin, FPGA accelerators, or ruggedized x86. No cloud. No backhaul. Operates in DDIL environments.</div>
+      <div class="cap-metric">
+        <div class="cap-metric-value">35</div>
+        <div class="cap-metric-unit">watts TDP</div>
+      </div>
+    </div>
+    <div class="cap-card">
+      <svg class="cap-icon" viewBox="0 0 36 36"><rect x="6" y="6" width="24" height="24" rx="2" fill="none" stroke="var(--gray-400)" stroke-width="1"/><path d="M12 18 L16 22 L24 14" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="cap-title">Calibrated Confidence</div>
+      <div class="cap-desc">Every detection ships with isotonic-calibrated probability scores. No black-box confidence. Operators know exactly how much to trust each classification.</div>
+      <div class="cap-metric">
+        <div class="cap-metric-value">0.98</div>
+        <div class="cap-metric-unit">reliability diagram AUC</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ ARCHITECTURE ════════════════════ -->
+<section class="section-pad reveal" id="architecture">
+  <div class="section-eyebrow">System Architecture</div>
+  <div class="section-title">Built for <em>contested environments.</em></div>
+
+  <div class="arch-row">
+    <div class="arch-visual">
+      <canvas id="archCanvas" width="700" height="540"></canvas>
+    </div>
+    <div class="arch-content">
+      <div class="section-desc" style="margin-top:0">A zero-trust, edge-native architecture designed to operate when every other system has failed. No cloud dependency. No single point of failure.</div>
+      <ul class="arch-list">
+        <li><span>DDIL-First Design</span> — Full autonomy in Denied, Disrupted, Intermittent, and Limited connectivity environments. Zero reliance on external compute.</li>
+        <li><span>Hardware Agnostic</span> — Deploys across Jetson Orin, AMD Xilinx Versal, Intel Arc, and ruggedized x86 with unified model format (ONNX Runtime).</li>
+        <li><span>MIL-STD-810H Qualified</span> — Tested across full environmental envelope: -40°C to +71°C operating range, 40G mechanical shock, salt fog, sand, and dust.</li>
+        <li><span>Zero-Trust Mesh</span> — End-to-end encrypted sensor-to-display pipeline. Mutual TLS between all nodes. Air-gapped model update pathway.</li>
+        <li><span>Open Architecture</span> — CMOSS/SOSA-aligned. Sensor-agnostic MISB ST 0601/0903 metadata compliance. TAK-compatible CoT output.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ INTEGRATIONS ════════════════════ -->
+<section class="section-pad-narrow reveal">
+  <div class="integ-section">
+    <div class="section-eyebrow" style="text-align:center">Platform Integration</div>
+    <div class="section-title" style="margin:0 auto;text-align:center">Connects to the systems<br>your operators <em>already use.</em></div>
+
+    <div class="integ-grid">
+      <div class="integ-item">
+        <div class="integ-icon">⬡</div>
+        <div class="integ-label">ATAK</div>
+      </div>
+      <div class="integ-item">
+        <div class="integ-icon">◎</div>
+        <div class="integ-label">WinTAK</div>
+      </div>
+      <div class="integ-item">
+        <div class="integ-icon">⊞</div>
+        <div class="integ-label">TAK Server</div>
+      </div>
+      <div class="integ-item">
+        <div class="integ-icon">◈</div>
+        <div class="integ-label">CUAS C2</div>
+      </div>
+      <div class="integ-item">
+        <div class="integ-icon">⬢</div>
+        <div class="integ-label">Link 16</div>
+      </div>
+      <div class="integ-item">
+        <div class="integ-icon">△</div>
+        <div class="integ-label">Cursor on Target</div>
+      </div>
+      <div class="integ-item">
+        <div class="integ-icon">◇</div>
+        <div class="integ-label">STANAG 4609</div>
+      </div>
+      <div class="integ-item">
+        <div class="integ-icon">▽</div>
+        <div class="integ-label">MISB 0601</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ SPECS TABLE ════════════════════ -->
+<section class="section-pad-narrow reveal" id="specs">
+  <div class="section-eyebrow">Technical Specifications</div>
+  <div class="section-title">The numbers that <em>matter.</em></div>
+
+  <table class="specs-table">
+    <tr><td>Detection Floor</td><td>2×2 pixels (4 px²) across all spectral bands</td></tr>
+    <tr><td>Inference Latency</td><td>&lt; 14ms end-to-end on Jetson Orin NX (30W TDP)</td></tr>
+    <tr><td>Classification</td><td>200+ target classes, 99.7% top-1 accuracy (NIST benchmark)</td></tr>
+    <tr><td>Spectral Coverage</td><td>Visible (400–700nm), SWIR (1–2.5μm), MWIR (3–5μm), LWIR (8–14μm)</td></tr>
+    <tr><td>Tracking Capacity</td><td>512 simultaneous tracks per sensor node</td></tr>
+    <tr><td>Input Formats</td><td>MPEG-TS, H.264, H.265, RTSP, GigE Vision, Camera Link, NTSC/PAL</td></tr>
+    <tr><td>Output Formats</td><td>CoT XML, MISB ST 0601/0903, JSON-LD, gRPC, NATS pub/sub</td></tr>
+    <tr><td>Operating Temperature</td><td>-40°C to +71°C (MIL-STD-810H Method 501.7/502.7)</td></tr>
+    <tr><td>Classification Level</td><td>CUI / FOUO — SECRET-capable with accredited enclave</td></tr>
+    <tr><td>SWaP</td><td>35W typical, 1.2 kg (processing unit only, excl. sensor)</td></tr>
+  </table>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ CTA ════════════════════ -->
+<section class="cta-section reveal">
+  <div class="cta-title">Ready to see<br><em>what you're missing?</em></div>
+  <div class="cta-sub">Schedule a classified demonstration with live sensor feeds.</div>
+  <div class="cta-buttons">
+    <a class="cta-btn cta-btn-primary" href="#">Request Demo →</a>
+    <a class="cta-btn cta-btn-secondary" href="#">Technical Brief</a>
+  </div>
+</section>
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<footer class="footer">
+  <div class="footer-left">
+    <div class="logo-mark"></div>
+    <span>Sentinel Vision Systems</span>
+  </div>
+  <div class="footer-links">
+    <a href="#">Careers</a>
+    <a href="#">Contact</a>
+    <a href="#">Legal</a>
+    <a href="#">Security</a>
+  </div>
+  <div class="footer-right">ITAR Controlled · © 2026 SVS Inc.</div>
+</footer>
+
+</body>
+</html>
