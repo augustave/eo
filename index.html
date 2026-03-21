@@ -342,8 +342,8 @@
   <div class="cta-title">Ready to see<br><em>what you're missing?</em></div>
   <div class="cta-sub">Schedule a classified demonstration with live sensor feeds.</div>
   <div class="cta-buttons">
-    <a class="cta-btn cta-btn-primary" href="#">Request Demo →</a>
-    <a class="cta-btn cta-btn-secondary" href="#">Technical Brief</a>
+    <button class="cta-btn cta-btn-primary" type="button" data-modal-target="demo">Request Demo →</button>
+    <button class="cta-btn cta-btn-secondary" type="button" data-modal-target="brief">Technical Brief</button>
   </div>
 </section>
 
@@ -361,6 +361,97 @@
   </div>
   <div class="footer-right">ITAR Controlled · © 2026 SVS Inc.</div>
 </footer>
+
+<!-- ════════════════════ MODAL ════════════════════ -->
+<div class="modal-shell" id="modalShell" aria-hidden="true">
+  <div class="modal-backdrop" data-modal-close></div>
+  <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow" id="modalEyebrow">Technical Brief</div>
+        <h2 class="modal-title" id="modalTitle">Sentinel Vision Systems</h2>
+      </div>
+      <button class="modal-close" type="button" aria-label="Close panel" data-modal-close>Close</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-view" data-modal-view="brief">
+        <div class="modal-grid">
+          <div class="modal-block">
+            <div class="modal-block-label">Mission Fit</div>
+            <p class="modal-copy">Edge-native EO/IR detection for long-range cueing, degraded visual environments, and legacy sensor modernization without new payload hardware.</p>
+          </div>
+          <div class="modal-block">
+            <div class="modal-block-label">Core Claims</div>
+            <ul class="modal-list">
+              <li>2×2 pixel minimum detection floor across supported bands</li>
+              <li>Sub-14ms end-to-end inference on Jetson Orin NX class hardware</li>
+              <li>Multi-hypothesis tracking with persistent identity under occlusion</li>
+              <li>TAK, CoT, MISB, and tactical dissemination compatibility</li>
+            </ul>
+          </div>
+          <div class="modal-block">
+            <div class="modal-block-label">Deployment Model</div>
+            <ul class="modal-list">
+              <li>DDIL-first processing with no cloud dependency</li>
+              <li>Runs on ruggedized x86, FPGA, or embedded GPU compute</li>
+              <li>Integrates with existing EO, MWIR, LWIR, SWIR, and analog feeds</li>
+            </ul>
+          </div>
+          <div class="modal-block">
+            <div class="modal-block-label">Operator Outputs</div>
+            <ul class="modal-list">
+              <li>Confidence-scored detections with persistent track IDs</li>
+              <li>CoT / TAK publication for downstream C2 systems</li>
+              <li>Recorded metadata streams for post-mission review</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-view" data-modal-view="demo">
+        <form class="demo-form" id="demoForm">
+          <div class="modal-grid modal-grid-tight">
+            <label class="field">
+              <span class="field-label">Name</span>
+              <input class="field-input" type="text" name="name" placeholder="Program lead" required>
+            </label>
+            <label class="field">
+              <span class="field-label">Organization</span>
+              <input class="field-input" type="text" name="organization" placeholder="Mission systems group" required>
+            </label>
+            <label class="field">
+              <span class="field-label">Email</span>
+              <input class="field-input" type="email" name="email" placeholder="operator@program.mil" required>
+            </label>
+            <label class="field">
+              <span class="field-label">Demo Focus</span>
+              <select class="field-input field-select" name="focus">
+                <option value="counter-uas">Counter-UAS cueing</option>
+                <option value="border">Persistent border surveillance</option>
+                <option value="vehicle">Long-range vehicle detection</option>
+                <option value="legacy">Legacy sensor modernization</option>
+              </select>
+            </label>
+            <label class="field field-span">
+              <span class="field-label">Mission Context</span>
+              <textarea class="field-input field-textarea" name="context" rows="5" placeholder="Describe the sensor stack, operating conditions, and desired operator outcome."></textarea>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button class="cta-btn cta-btn-primary" type="submit">Submit Request</button>
+            <p class="modal-note">This prototype stores the request locally in the browser session only. No backend is connected.</p>
+          </div>
+        </form>
+
+        <div class="demo-success" id="demoSuccess" hidden>
+          <div class="modal-block-label">Request Logged</div>
+          <p class="modal-copy">Demo request captured for this session. The next production step is wiring this form to a real intake endpoint or CRM workflow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 
 </body>
 </html>

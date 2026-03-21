@@ -511,6 +511,80 @@ function initScrollReveal() {
   els.forEach((el) => observer.observe(el));
 }
 
+function initModal() {
+  const shell = document.getElementById('modalShell');
+  const eyebrow = document.getElementById('modalEyebrow');
+  const title = document.getElementById('modalTitle');
+  const demoForm = document.getElementById('demoForm');
+  const demoSuccess = document.getElementById('demoSuccess');
+  const views = shell.querySelectorAll('[data-modal-view]');
+  const openers = document.querySelectorAll('[data-modal-target]');
+  const closers = shell.querySelectorAll('[data-modal-close]');
+  const modalConfig = {
+    brief: {
+      eyebrow: 'Technical Brief',
+      title: 'Sentinel Vision Systems Brief'
+    },
+    demo: {
+      eyebrow: 'Request Demo',
+      title: 'Classified Demo Intake'
+    }
+  };
+
+  function setView(viewName) {
+    views.forEach((view) => {
+      view.hidden = view.dataset.modalView !== viewName;
+    });
+    eyebrow.textContent = modalConfig[viewName].eyebrow;
+    title.textContent = modalConfig[viewName].title;
+
+    if (viewName === 'demo') {
+      const existingRequest = sessionStorage.getItem('sentinel-demo-request');
+      demoForm.hidden = Boolean(existingRequest);
+      demoSuccess.hidden = !existingRequest;
+    }
+  }
+
+  function openModal(viewName) {
+    setView(viewName);
+    shell.classList.add('is-open');
+    shell.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeModal() {
+    shell.classList.remove('is-open');
+    shell.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  openers.forEach((button) => {
+    button.addEventListener('click', () => {
+      openModal(button.dataset.modalTarget);
+    });
+  });
+
+  closers.forEach((button) => {
+    button.addEventListener('click', closeModal);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && shell.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+
+  demoForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(demoForm);
+    const payload = Object.fromEntries(formData.entries());
+    sessionStorage.setItem('sentinel-demo-request', JSON.stringify(payload));
+    demoForm.reset();
+    demoForm.hidden = true;
+    demoSuccess.hidden = false;
+  });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   drawPanel1();
   drawPanel2();
@@ -518,4 +592,5 @@ window.addEventListener('DOMContentLoaded', () => {
   initLiveCanvas();
   drawArchCanvas();
   initScrollReveal();
+  initModal();
 });
