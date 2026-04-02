@@ -118,13 +118,14 @@
     <div class="live-border-top"></div>
     <div class="live-border-bottom"></div>
     <div class="live-telemetry">
-      <div>FEED 001 — PERSISTENT STARE</div>
-      <div>LAT 34.0522° N</div>
-      <div>LON 118.2437° W</div>
-      <div>ALT 8,200 FT AGL</div>
+      <div id="liveFeedName">FEED 001 — PERSISTENT STARE</div>
+      <div id="liveLat">LAT 34.0522° N</div>
+      <div id="liveLon">LON 118.2437° W</div>
+      <div id="liveAlt">ALT 8,200 FT AGL</div>
     </div>
     <div class="live-telemetry-right">
       <div><span class="rec-dot"></span>RECORDING</div>
+      <div id="liveModeStatus">MODE FUSED · PROFILE COUNTER-UAS</div>
       <div id="liveTime">00:14:32:07</div>
       <div id="liveFps">60 FPS</div>
       <div id="liveDetections">DETECTIONS: 0</div>
@@ -133,9 +134,40 @@
       <div class="live-hud-inner">
         <div class="live-hud-label">Active Detections</div>
         <div class="live-hud-count" id="liveCount">0</div>
-        <div class="live-hud-sub">Real-time autonomous classification</div>
+        <div class="live-hud-sub" id="liveHudSub">Real-time autonomous classification</div>
       </div>
     </div>
+  </div>
+  <div class="live-controls" aria-label="Live feed controls">
+    <div class="control-block">
+      <div class="control-label">Sensor Mode</div>
+      <div class="segmented-control" id="sensorModeControl">
+        <button class="segmented-btn is-active" type="button" data-sensor-mode="fused" aria-pressed="true">Fused</button>
+        <button class="segmented-btn" type="button" data-sensor-mode="eo" aria-pressed="false">EO</button>
+        <button class="segmented-btn" type="button" data-sensor-mode="mwir" aria-pressed="false">MWIR</button>
+        <button class="segmented-btn" type="button" data-sensor-mode="lwir" aria-pressed="false">LWIR</button>
+      </div>
+    </div>
+    <label class="control-block">
+      <span class="control-label">Mission Profile</span>
+      <select class="control-select" id="missionProfileControl">
+        <option value="counter-uas">Counter-UAS Watch</option>
+        <option value="border">Border Overwatch</option>
+        <option value="convoy">Convoy Escort</option>
+        <option value="site">Site Security</option>
+      </select>
+      <span class="control-value" id="missionProfileValue">Counter-UAS Watch</span>
+    </label>
+    <label class="control-block control-range">
+      <span class="control-label">Target Density</span>
+      <input id="densityControl" type="range" min="2" max="12" step="1" value="8">
+      <span class="control-value" id="densityValue">8 tracks</span>
+    </label>
+    <label class="control-block control-range">
+      <span class="control-label">Confidence Threshold</span>
+      <input id="thresholdControl" type="range" min="0.75" max="0.98" step="0.01" value="0.75">
+      <span class="control-value" id="thresholdValue">0.75 min</span>
+    </label>
   </div>
 </section>
 

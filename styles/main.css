@@ -313,6 +313,91 @@ body.modal-open {
   text-align: right;
 }
 
+.live-controls {
+  display: grid;
+  grid-template-columns: 1.35fr 1.05fr 1fr 1fr;
+  gap: 1px;
+  background: var(--gray-800);
+  border-top: 1px solid var(--gray-800);
+}
+
+.control-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 24px;
+  background: var(--black);
+}
+
+.control-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.segmented-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.segmented-btn {
+  padding: 12px 16px;
+  border: 1px solid var(--gray-800);
+  background: transparent;
+  color: var(--gray-400);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.segmented-btn:hover,
+.segmented-btn:focus-visible {
+  border-color: var(--gray-500);
+  color: var(--white);
+}
+
+.segmented-btn.is-active {
+  border-color: rgba(232,49,42,0.45);
+  background: rgba(232,49,42,0.08);
+  color: var(--white);
+}
+
+.control-select {
+  width: 100%;
+  border: 1px solid var(--gray-800);
+  background: rgba(255,255,255,0.02);
+  color: var(--white);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.control-select:focus {
+  outline: none;
+  border-color: var(--gray-400);
+}
+
+.control-range input[type="range"] {
+  width: 100%;
+  accent-color: var(--red);
+}
+
+.control-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-300);
+}
+
 .pipeline-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -846,6 +931,7 @@ body.modal-open {
   .arch-row { grid-template-columns: 1fr; }
   .stat-bar { flex-wrap: wrap; gap: 40px; }
   .topbar-nav { display: none; }
+  .live-controls { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 720px) {
@@ -867,5 +953,19 @@ body.modal-open {
 
   .modal-note {
     max-width: none;
+  }
+
+  .control-block {
+    padding: 18px 20px;
+  }
+
+  .live-telemetry,
+  .live-telemetry-right {
+    font-size: 8px;
+    line-height: 1.6;
+  }
+
+  .live-hud-count {
+    font-size: 48px;
   }
 }

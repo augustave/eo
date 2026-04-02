@@ -284,46 +284,244 @@ function initLiveCanvas() {
   const ctx = c.getContext('2d');
   const W = c.width;
   const H = c.height;
+  const densityControl = document.getElementById('densityControl');
+  const densityValue = document.getElementById('densityValue');
+  const thresholdControl = document.getElementById('thresholdControl');
+  const thresholdValue = document.getElementById('thresholdValue');
+  const missionProfileControl = document.getElementById('missionProfileControl');
+  const missionProfileValue = document.getElementById('missionProfileValue');
+  const sensorModeButtons = document.querySelectorAll('[data-sensor-mode]');
+  const liveFeedName = document.getElementById('liveFeedName');
+  const liveLat = document.getElementById('liveLat');
+  const liveLon = document.getElementById('liveLon');
+  const liveAlt = document.getElementById('liveAlt');
+  const liveModeStatus = document.getElementById('liveModeStatus');
+  const liveHudSub = document.getElementById('liveHudSub');
+  const liveFps = document.getElementById('liveFps');
 
-  const terrainData = ctx.createImageData(W, H);
-  const td = terrainData.data;
+  const missionProfiles = {
+    'counter-uas': {
+      label: 'Counter-UAS Watch',
+      feed: 'FEED 001 — COUNTER-UAS WATCH',
+      lat: 'LAT 34.0522° N',
+      lon: 'LON 118.2437° W',
+      alt: 'ALT 8,200 FT AGL',
+      hudSub: 'Autonomous aerial track discrimination',
+      speedScale: 1.08,
+      labels: ['UAS', 'UNK', 'UAS', 'UAS', 'VEH', 'DISMOUNT']
+    },
+    border: {
+      label: 'Border Overwatch',
+      feed: 'FEED 004 — BORDER OVERWATCH',
+      lat: 'LAT 31.3320° N',
+      lon: 'LON 106.4780° W',
+      alt: 'ALT 5,400 FT AGL',
+      hudSub: 'Persistent cross-border movement analysis',
+      speedScale: 0.76,
+      labels: ['DISMOUNT', 'VEH', 'UNK', 'DISMOUNT', 'VEH']
+    },
+    convoy: {
+      label: 'Convoy Escort',
+      feed: 'FEED 012 — CONVOY ESCORT',
+      lat: 'LAT 33.3152° N',
+      lon: 'LON 43.7861° E',
+      alt: 'ALT 3,100 FT AGL',
+      hudSub: 'Route security and vehicle cueing',
+      speedScale: 1.34,
+      labels: ['VEH', 'VEH', 'UAS', 'UNK', 'VEH', 'DISMOUNT']
+    },
+    site: {
+      label: 'Site Security',
+      feed: 'FEED 021 — SITE SECURITY GRID',
+      lat: 'LAT 36.8715° N',
+      lon: 'LON 35.2318° E',
+      alt: 'ALT 1,200 FT AGL',
+      hudSub: 'Perimeter intrusion and loiter detection',
+      speedScale: 0.58,
+      labels: ['DISMOUNT', 'UNK', 'VEH', 'DISMOUNT', 'UNK']
+    }
+  };
+
+  const state = {
+    sensorMode: 'fused',
+    missionProfile: missionProfileControl.value,
+    density: Number(densityControl.value),
+    threshold: Number(thresholdControl.value)
+  };
+
+  const terrainBase = new Uint8ClampedArray(W * H);
   const trng = mulberry32(777);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const i = (y * W + x) * 4;
+      const i = y * W + x;
       let v = fbm(x * 0.7, y * 0.7, 5, 600) * 50 + 8;
       v += trng() * 4;
       const hFactor = Math.max(0, 1 - y / (H * 0.35));
       v += hFactor * 15;
-      td[i] = td[i + 1] = td[i + 2] = Math.max(0, Math.min(255, v | 0));
-      td[i + 3] = 255;
+      terrainBase[i] = Math.max(0, Math.min(255, v | 0));
     }
+  }
+
+  const terrainCache = new Map();
+
+  function getModePalette(mode) {
+    switch (mode) {
+      case 'eo':
+        return { r: 1.02, g: 1.02, b: 1.02, offset: 0, contrast: 1.14 };
+      case 'mwir':
+        return { r: 1.08, g: 0.9, b: 0.72, offset: 6, contrast: 1.18 };
+      case 'lwir':
+        return { r: 1.12, g: 1.02, b: 0.88, offset: 10, contrast: 1.28 };
+      default:
+        return { r: 1.04, g: 0.96, b: 0.9, offset: 4, contrast: 1.2 };
+    }
+  }
+
+  function getTerrainForMode(mode) {
+    if (terrainCache.has(mode)) return terrainCache.get(mode);
+
+    const palette = getModePalette(mode);
+    const terrainData = ctx.createImageData(W, H);
+    const td = terrainData.data;
+    for (let i = 0; i < terrainBase.length; i++) {
+      const idx = i * 4;
+      const centered = (terrainBase[i] - 96) * palette.contrast + 96 + palette.offset;
+      const clamped = Math.max(0, Math.min(255, centered));
+      td[idx] = Math.max(0, Math.min(255, clamped * palette.r));
+      td[idx + 1] = Math.max(0, Math.min(255, clamped * palette.g));
+      td[idx + 2] = Math.max(0, Math.min(255, clamped * palette.b));
+      td[idx + 3] = 255;
+    }
+    terrainCache.set(mode, terrainData);
+    return terrainData;
   }
 
   const targets = [];
   const targetRng = mulberry32(1234);
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 12; i++) {
     targets.push({
       x: targetRng() * W,
       y: H * 0.25 + targetRng() * H * 0.65,
-      vx: (targetRng() - 0.5) * 1.2,
-      vy: (targetRng() - 0.5) * 0.3,
+      baseVx: (targetRng() - 0.5) * 1.2,
+      baseVy: (targetRng() - 0.5) * 0.3,
+      vx: 0,
+      vy: 0,
       size: 3 + targetRng() * 6,
       brightness: 120 + targetRng() * 100,
-      conf: (0.75 + targetRng() * 0.24).toFixed(2),
-      label: ['UAS', 'VEH', 'DISMOUNT', 'UNK', 'VEH', 'UAS', 'VEH', 'DISMOUNT'][i],
+      confidence: 0.75 + targetRng() * 0.24,
+      label: 'UNK',
       tracked: targetRng() > 0.3,
       trackAge: (targetRng() * 200) | 0
     });
   }
 
+  function getModeStatus(mode) {
+    switch (mode) {
+      case 'eo':
+        return 'MODE EO · DAYLIGHT WFOV';
+      case 'mwir':
+        return 'MODE MWIR · HOT TARGET PRIORITY';
+      case 'lwir':
+        return 'MODE LWIR · THERMAL SEARCH';
+      default:
+        return 'MODE FUSED · MULTI-SENSOR TRACK';
+    }
+  }
+
+  function updateControlLabels() {
+    missionProfileValue.textContent = missionProfiles[state.missionProfile].label;
+    densityValue.textContent = `${state.density} tracks`;
+    thresholdValue.textContent = `${state.threshold.toFixed(2)} min`;
+  }
+
+  function applyMissionProfile(profileKey) {
+    const profile = missionProfiles[profileKey];
+    state.missionProfile = profileKey;
+    missionProfileControl.value = profileKey;
+    liveFeedName.textContent = profile.feed;
+    liveLat.textContent = profile.lat;
+    liveLon.textContent = profile.lon;
+    liveAlt.textContent = profile.alt;
+    liveHudSub.textContent = profile.hudSub;
+    liveModeStatus.textContent = `${getModeStatus(state.sensorMode)} · ${profile.label.toUpperCase()}`;
+
+    targets.forEach((target, index) => {
+      target.vx = target.baseVx * profile.speedScale;
+      target.vy = target.baseVy * profile.speedScale;
+      target.label = profile.labels[index % profile.labels.length];
+    });
+  }
+
+  function getTargetGlowColor(target) {
+    switch (state.sensorMode) {
+      case 'eo':
+        return `rgba(${Math.min(255, target.brightness + 10)},${Math.min(255, target.brightness + 10)},${Math.min(255, target.brightness + 10)},0.55)`;
+      case 'mwir':
+        return `rgba(255,${Math.max(120, target.brightness)},${Math.max(70, target.brightness - 36)},0.88)`;
+      case 'lwir':
+        return `rgba(255,${Math.max(170, target.brightness)},${Math.max(140, target.brightness - 8)},0.92)`;
+      default:
+        return `rgba(${target.brightness},${target.brightness},${target.brightness},0.8)`;
+    }
+  }
+
+  function getTargetCoreColor(target) {
+    switch (state.sensorMode) {
+      case 'eo':
+        return `rgb(${target.brightness},${target.brightness},${target.brightness})`;
+      case 'mwir':
+        return `rgb(255,${Math.max(130, target.brightness)},${Math.max(80, target.brightness - 30)})`;
+      case 'lwir':
+        return `rgb(255,${Math.max(190, target.brightness)},${Math.max(155, target.brightness - 10)})`;
+      default:
+        return `rgb(${target.brightness},${target.brightness},${target.brightness})`;
+    }
+  }
+
+  function updateSensorMode(nextMode) {
+    state.sensorMode = nextMode;
+    sensorModeButtons.forEach((button) => {
+      const isActive = button.dataset.sensorMode === nextMode;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+    liveModeStatus.textContent = `${getModeStatus(nextMode)} · ${missionProfiles[state.missionProfile].label.toUpperCase()}`;
+  }
+
+  missionProfileControl.addEventListener('change', () => {
+    applyMissionProfile(missionProfileControl.value);
+    updateControlLabels();
+  });
+
+  densityControl.addEventListener('input', () => {
+    state.density = Number(densityControl.value);
+    updateControlLabels();
+  });
+
+  thresholdControl.addEventListener('input', () => {
+    state.threshold = Number(thresholdControl.value);
+    updateControlLabels();
+  });
+
+  sensorModeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      updateSensorMode(button.dataset.sensorMode);
+    });
+  });
+
+  updateControlLabels();
+  updateSensorMode(state.sensorMode);
+  applyMissionProfile(state.missionProfile);
+
   let frame = 0;
+  let lastFpsUpdate = performance.now();
+  let framesSinceUpdate = 0;
   const countEl = document.getElementById('liveCount');
   const detectEl = document.getElementById('liveDetections');
   const timeEl = document.getElementById('liveTime');
 
   function animate() {
-    ctx.putImageData(terrainData, 0, 0);
+    ctx.putImageData(getTerrainForMode(state.sensorMode), 0, 0);
 
     ctx.strokeStyle = 'rgba(255,255,255,0.015)';
     ctx.lineWidth = 1;
@@ -335,7 +533,8 @@ function initLiveCanvas() {
     }
 
     let detCount = 0;
-    for (const t of targets) {
+    const activeTargets = targets.slice(0, state.density);
+    for (const [index, t] of activeTargets.entries()) {
       t.x += t.vx;
       t.y += t.vy;
       t.trackAge++;
@@ -346,24 +545,24 @@ function initLiveCanvas() {
       if (t.y > H * 0.9) t.vy = -Math.abs(t.vy);
 
       const glow = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, t.size * 2);
-      glow.addColorStop(0, `rgba(${t.brightness},${t.brightness},${t.brightness},0.8)`);
+      glow.addColorStop(0, getTargetGlowColor(t));
       glow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = glow;
       ctx.fillRect(t.x - t.size * 2, t.y - t.size * 2, t.size * 4, t.size * 4);
 
-      ctx.fillStyle = `rgb(${t.brightness},${t.brightness},${t.brightness})`;
+      ctx.fillStyle = getTargetCoreColor(t);
       ctx.fillRect(t.x - t.size / 2, t.y - t.size / 2, t.size, t.size);
 
-      if (t.tracked) {
+      if (t.tracked && t.confidence >= state.threshold) {
         detCount++;
-        const pulse = 0.6 + Math.sin(frame * 0.03 + targets.indexOf(t)) * 0.4;
+        const pulse = 0.6 + Math.sin(frame * 0.03 + index) * 0.4;
         const boxPad = t.size + 8;
         ctx.strokeStyle = `rgba(232,49,42,${0.6 + pulse * 0.4})`;
         ctx.lineWidth = 1.2;
         ctx.strokeRect(t.x - boxPad, t.y - boxPad, boxPad * 2, boxPad * 2);
         ctx.fillStyle = 'rgba(232,49,42,0.6)';
         ctx.font = '500 8px "IBM Plex Mono", monospace';
-        ctx.fillText(`${t.label} ${t.conf}`, t.x - boxPad, t.y - boxPad - 4);
+        ctx.fillText(`${t.label} ${t.confidence.toFixed(2)}`, t.x - boxPad, t.y - boxPad - 4);
         ctx.fillStyle = 'rgba(255,255,255,0.15)';
         ctx.font = '400 7px "IBM Plex Mono", monospace';
         ctx.fillText(`T${String(t.trackAge).padStart(4, '0')}`, t.x + boxPad + 3, t.y);
@@ -378,6 +577,15 @@ function initLiveCanvas() {
     const ss = String(sec % 60).padStart(2, '0');
     const ff = String(frame % 60).padStart(2, '0');
     timeEl.textContent = `00:${mm}:${ss}:${ff}`;
+
+    framesSinceUpdate++;
+    const now = performance.now();
+    if (now - lastFpsUpdate >= 500) {
+      const fps = Math.round((framesSinceUpdate * 1000) / (now - lastFpsUpdate));
+      liveFps.textContent = `${fps} FPS`;
+      framesSinceUpdate = 0;
+      lastFpsUpdate = now;
+    }
 
     frame++;
     requestAnimationFrame(animate);
